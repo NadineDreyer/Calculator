@@ -52,8 +52,11 @@
     <Compile Include="CalculatorForm.Designer.cs">
       <DependentUpon>CalculatorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\CalculationMethod.cs" />
+    <Compile Include="Helpers\CalculationEnum.cs" />
+    <Compile Include="Helpers\CalculationFormulas.cs" />
+    <Compile Include="Helpers\ICalculationFormulas.cs" />
     <Compile Include="Models\CalculationModel.cs" />
+    <Compile Include="Models\ICalculationModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="CalculatorForm.resx">

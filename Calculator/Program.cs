@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
+using Calculator.Helpers;
+using Calculator.Models;
 
 namespace Calculator
 {
@@ -13,7 +15,7 @@ namespace Calculator
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new CalculatorForm());
+            Application.Run(new CalculatorForm(new CalculationModel(), new CalculationFormulas()));
         }
     }
 }

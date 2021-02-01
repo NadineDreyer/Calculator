@@ -8,15 +8,17 @@ namespace Calculator
 {
     public partial class CalculatorForm : Form
     {
-        private CalculationMethod _calculationMethod;
-
+        private CalculationEnum _calculationMethod;
+        public ICalculationModel CalculationModel;
+        public readonly ICalculationFormulas CalculationFormulas;
+        public const string Error = "Error Occurred";
         public string Input = "";
 
-        public CalculationModel CalculationModel = new CalculationModel();
-
-        public CalculatorForm()
+        public CalculatorForm(ICalculationModel calculationModel, ICalculationFormulas calculationFormulas)
         {
             InitializeComponent();
+            CalculationModel = calculationModel;
+            CalculationFormulas = calculationFormulas;
         }
 
         private void Button_0_Click(object sender, EventArgs e)
@@ -81,30 +83,50 @@ namespace Calculator
 
         private void Button_Multiply_Click(object sender, EventArgs e)
         {
-            CalculationModel.FirstInput = Convert.ToDouble(Input_Box.Text);
-            Input_Box.Text = @"0";
-            _calculationMethod = CalculationMethod.Multiply;
+            if (double.TryParse(Input_Box.Text, out var number))
+            {
+                CalculationModel.FirstInput = number;
+                Input_Box.Text = @"0";
+                _calculationMethod = CalculationEnum.Multiply;
+            }
+            else
+                Input_Box.Text = Error;
         }
 
         private void Button_Divide_Click(object sender, EventArgs e)
         {
-            CalculationModel.FirstInput = Convert.ToDouble(Input_Box.Text);
-            Input_Box.Text = @"0";
-            _calculationMethod = CalculationMethod.Division;
+            if (double.TryParse(Input_Box.Text, out var number))
+            {
+                CalculationModel.FirstInput = number;
+                Input_Box.Text = @"0";
+                _calculationMethod = CalculationEnum.Division;
+            }
+            else
+                Input_Box.Text = Error;
         }
 
         private void Button_Minus_Click(object sender, EventArgs e)
         {
-            CalculationModel.FirstInput = Convert.ToDouble(Input_Box.Text);
-            Input_Box.Text = @"0";
-            _calculationMethod = CalculationMethod.Subtract;
+            if (double.TryParse(Input_Box.Text, out var number))
+            {
+                CalculationModel.FirstInput = number;
+                Input_Box.Text = @"0";
+                _calculationMethod = CalculationEnum.Subtract;
+            }
+            else
+                Input_Box.Text = Error;
         }
 
         private void Button_Plus_Click(object sender, EventArgs e)
         {
-            CalculationModel.FirstInput = Convert.ToDouble(Input_Box.Text);
-            Input_Box.Text = @"0";
-            _calculationMethod = CalculationMethod.Addition;
+            if (double.TryParse(Input_Box.Text, out var number))
+            {
+                CalculationModel.FirstInput = number;
+                Input_Box.Text = @"0";
+                _calculationMethod = CalculationEnum.Addition;
+            }
+            else
+                Input_Box.Text = Error;
         }
 
         private void Button_CE_Click(object sender, EventArgs e)
@@ -120,37 +142,46 @@ namespace Calculator
 
         private void Button_Equal_Click(object sender, EventArgs e)
         {
-            CalculationModel.SecondInput = Convert.ToDouble(Input_Box.Text);
+            if (double.TryParse(Input_Box.Text, out var number))
+                CalculationModel.SecondInput = number;
+            else
+                Input_Box.Text = Error;
 
             switch (_calculationMethod)
             {
-                case CalculationMethod.Addition:
-                    CalculationModel.ResultValue = CalculationModel.FirstInput + CalculationModel.SecondInput;
-                    Input_Box.Text = Convert.ToString(CalculationModel.ResultValue, CultureInfo.InvariantCulture);
-                    CalculationModel.FirstInput = CalculationModel.ResultValue;
+                case CalculationEnum.Addition:
+                    var addResult = CalculationFormulas.AddValues(CalculationModel.FirstInput,
+                        CalculationModel.SecondInput);
+                    Input_Box.Text = addResult;
+                    CalculationModel.FirstInput = double.Parse(addResult, CultureInfo.InvariantCulture);
                     break;
-                case CalculationMethod.Division:
+                case CalculationEnum.Division:
                     if (Math.Abs(CalculationModel.SecondInput) <= 0)
                         Input_Box.Text = @"Cannot divide by zero";
                     else
                     {
-                        CalculationModel.ResultValue = CalculationModel.FirstInput / CalculationModel.SecondInput;
-                        Input_Box.Text = Convert.ToString(CalculationModel.ResultValue, CultureInfo.InvariantCulture);
-                        CalculationModel.FirstInput = CalculationModel.ResultValue;
+                        var divideResult = CalculationFormulas.DivideValues(CalculationModel.FirstInput,
+                            CalculationModel.SecondInput);
+                        Input_Box.Text = divideResult;
+                        CalculationModel.FirstInput = double.Parse(divideResult, CultureInfo.InvariantCulture);
                     }
+
                     break;
-                case CalculationMethod.Multiply:
-                    CalculationModel.ResultValue = CalculationModel.FirstInput * CalculationModel.SecondInput;
-                    Input_Box.Text = Convert.ToString(CalculationModel.ResultValue, CultureInfo.InvariantCulture);
-                    CalculationModel.FirstInput = CalculationModel.ResultValue;
+                case CalculationEnum.Multiply:
+                    var multiplyResult = CalculationFormulas.MultiplyValues(CalculationModel.FirstInput,
+                        CalculationModel.SecondInput);
+                    Input_Box.Text = multiplyResult;
+                    CalculationModel.FirstInput = double.Parse(multiplyResult, CultureInfo.InvariantCulture);
                     break;
-                case CalculationMethod.Subtract:
-                    CalculationModel.ResultValue = CalculationModel.FirstInput - CalculationModel.SecondInput;
-                    Input_Box.Text = Convert.ToString(CalculationModel.ResultValue, CultureInfo.InvariantCulture);
-                    CalculationModel.FirstInput = CalculationModel.ResultValue;
+                case CalculationEnum.Subtract:
+                    var subtractResult = CalculationFormulas.SubtractValues(CalculationModel.FirstInput,
+                        CalculationModel.SecondInput);
+                    Input_Box.Text = subtractResult;
+                    CalculationModel.FirstInput = double.Parse(subtractResult, CultureInfo.InvariantCulture);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    CalculationModel.FirstInput = number;
+                    break;
             }
         }
 
@@ -169,25 +200,35 @@ namespace Calculator
 
         private void Button_Percentage_Click(object sender, EventArgs e)
         {
-            CalculationModel.FirstInput = Convert.ToDouble(Input_Box.Text);
-            Input_Box.Text = @"0";
-            CalculationModel.ResultValue = CalculationModel.FirstInput / 100;
-            Input_Box.Text = Convert.ToString(CalculationModel.ResultValue, CultureInfo.InvariantCulture);
+            if (double.TryParse(Input_Box.Text, out var number))
+            {
+                CalculationModel.FirstInput = number;
+                Input_Box.Text = @"0";
+                var result = CalculationFormulas.PercentageCalculate(CalculationModel.FirstInput);
+                Input_Box.Text = result;
+            }
+            else
+                Input_Box.Text = Error;
         }
 
         private void Button_Square_Click(object sender, EventArgs e)
         {
-            var result = Convert.ToDouble(Input_Box.Text);
-            Input_Box.Text = @"0";
-            CalculationModel.ResultValue = Math.Sqrt(result);
-            Input_Box.Text = Convert.ToString(CalculationModel.ResultValue, CultureInfo.InvariantCulture);
+            if (double.TryParse(Input_Box.Text, out var number))
+            {
+                var convertedValue = number;
+                Input_Box.Text = @"0";
+                var result = CalculationFormulas.SquareRootCalculate(convertedValue);
+                Input_Box.Text = result;
+            }
+            else
+                Input_Box.Text = Error;
         }
 
         private void Pi_Click(object sender, EventArgs e)
         {
-            CalculationModel.ResultValue = Math.PI;
+            var result = CalculationFormulas.PiCalculate();
             Input_Box.Text = @"0";
-            Input_Box.Text = Convert.ToString(CalculationModel.ResultValue, CultureInfo.InvariantCulture);
+            Input_Box.Text = result;
         }
 
         private void InputCheck(string input)
